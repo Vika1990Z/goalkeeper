@@ -13,7 +13,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-# объявляем переменные
+# declare variables
 openstack_region_name=os.environ['OS_OPENSTACK_REGION_NAME']
 openstack_auth_url=os.environ['OS_OPENSTACK_URL']
 openstack_username=os.environ['OS_OPENSTACK_USERNAME']
@@ -26,7 +26,7 @@ mail_from_adr=os.environ['OS_MAIL_FROM_ADR']
 mail_password=os.environ['OS_MAIL_PASSWORD']
 
 
-# функция обеспечивающая ведение логов:
+# logging function:
 def logInsert(logStr):                                                                               
     with open('2logging_goalkeeper.log', 'a', encoding='utf-8') as f_obj:
         string = str(datetime.now())[0:19] + ': ' + logStr + '\n'
@@ -37,7 +37,7 @@ def logInsert(logStr):
 print (f'Hello Today,\nThe GOALKEEPER starts!\n')            
 print (f'Project starts with next credetials:\nopenstack_region_name={openstack_region_name}\nopenstack_auth_url={openstack_auth_url}\nopenstack_username={openstack_username}\nopenstack_user_domain_id={openstack_user_domain_id}\nfleio_auth_url={fleio_auth_url}\nmail_from_adr={mail_from_adr}\n') 
 
-# функция собирающая все наши IPадреса в один массив:
+# function collecting all our IP addresses into one array:
 def ip_range():
     ip = []
     for i in range(1, 128):
@@ -53,7 +53,7 @@ def ip_range():
     return (ip_str)
 
 
-# функция обеспечивающая подключение к Openstack:
+# function providing connection to Openstack:
 def connection_with_openstack():
     conn = connection.Connection(
         region_name=openstack_region_name,
@@ -72,11 +72,11 @@ def connection_with_openstack():
 
 
 
-# функция поиска имени проэкта во Fleio по его ID в Openstack, которому пренадлежит указанный IPадрес: 
+# function of searching a project name in Fleio by its ID in Openstack, which belongs to the specified IP address:
 def find_project_name(ip):
     #logInsert(f'Function "find_project_name({ip})" starts')
     print (f'Function "find_project_name({ip})" starts')
-    # блок поиска ID проэкта в Openstack
+    # block 1 - search project ID in Openstack
     conn = connection_with_openstack()
     servers = conn.list_servers(detailed=False, all_projects=True, bare=False, filters=None)
     #logInsert(f'List of servers was found with openstackSDK')
@@ -106,7 +106,7 @@ def find_project_name(ip):
         #logInsert(f'ProjectID in openstack of host: {ip} was found among servers and it is next : {found_projectID_openstack}') 
         print (f'ProjectID in openstack of host: {ip} was found among servers and it is next : {found_projectID_openstack}') 
     projectID = found_projectID_openstack
-    # блок поиска имени проэкта во Fleio
+    # block 2 - search a project name in Fleio
     if projectID == "Ip Not Found":
         projectNAME_Fleio = 'Project name not found'
         #logInsert(f'Project name not found because Ip {ip} Not Found not in servers_list not in list_of_flostingIPs')
@@ -135,7 +135,7 @@ def find_project_name(ip):
 
 
 
-# функция поиска почтового адресса проэкта во Fleio, которому пренадлежит указанный IPадрес:
+# function of searching email address of the project in Fleio to which the specified IP address belongs: 
 def find_email_fleio(ip):
     #logInsert(f'Function "find_email_fleio({ip})" starts')
     print (f'Function "find_email_fleio({ip})" starts')
@@ -186,7 +186,7 @@ def find_email_fleio(ip):
 
 
 
-# функция отправки отчета сканирования на найденный почтовый адресс, владельца проэкта во Fleio:
+# function of sending a scan report to the found email address of the project owner in Fleio:
 def sendmail_report(to_adr, code):
     #logInsert(f'Function "sendmail_report(to_adr, code)" starts')
     print (f'Function "sendmail_report(to_adr, code)" starts')
@@ -212,7 +212,7 @@ def sendmail_report(to_adr, code):
         <p>If the issue has been fixed successfully, you should not receive any further notifications.</p>
         <p>In case of further questions, please contact support@ventus.ag.</p>
         <p>Additional information can be found at the link below.</p>
-        <a href="https://docs.ventuscloud.eu/docs/tutorials/Security_Guide">Security_Guide</a>
+        <a href="https://ventuscloud.eu/docs/tutorials/Security_Guide">Security_Guide</a>
         <p>Kind regards,</p>
         <p>Your Ventus Cloud Team</p>
       </body>
@@ -231,7 +231,7 @@ def sendmail_report(to_adr, code):
 
 
 
-# основная функция nmap сканирования выбранных хостов по выбранным портам, которая сканирует и использует все вышеперчисленные функции, чтоб в конечном итоге отправить отчет сканирования
+# The main function of nmap scanning of selected hosts on selected ports, which scans and uses all of the above functions for sending a scan report.
 def scanning():
     #logInsert(f'Function "scanning()" starts')
     print (f'Function "scanning()" starts')
@@ -270,15 +270,15 @@ def scanning():
                 #logInsert(f'As contact details was not found a report was sent to my own adress')
                 print (f'As contact details was not found a report was sent to my own adress')
                 #logInsert(f'Report sent successfully')
-                print (f'Report sent successfully')
+                print (f'Report sent successfully to v.zubyenko@gmail.com')
                 #logInsert(f'______________________________________________________________________________')
                 print (f'______________________________________________________________________________')
             else:
                 sendmail_report(to_adr, code)
                 #logInsert(f'Report was sent to owner of this host {host}')
-                print (f'Report was sent to owner of this host {host}')
+                print (f'Report was sent to owner of this host {host} on email {to_adr}')
                 #logInsert(f'Report sent successfully')
-                print (f'Report sent successfully')
+                print (f'Report sent successfully to {to_adr}')
                 #logInsert(f'______________________________________________________________________________')
                 print (f'______________________________________________________________________________')
             #print (output)
