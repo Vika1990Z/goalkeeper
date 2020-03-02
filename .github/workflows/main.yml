@@ -1,17 +1,21 @@
-name: CI
-
-on: [push]
-
+name: push
+on:
+  push:
+    branches:
+    - master
+    paths:
 jobs:
+
+#building app
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
+    - uses: actions/checkout@v1
+    - name: Build
       run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+        SHA=${GITHUB_SHA:0:7}
+        APP=${GITHUB_REPOSITORY#*/}
+        DOCKER_URL=${{ secrets.REGISTRY_URL }}/${{ secrets.REGISTRY_REPO }}/${APP}/${APP}:${SHA}
+        docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
+        docker build . --no-cache -f Dockerfile -t ${DOCKER_URL}
+        docker push ${DOCKER_URL}
