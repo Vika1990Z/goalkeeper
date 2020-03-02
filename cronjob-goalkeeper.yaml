@@ -1,7 +1,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: goalkeeper-kuber   (придумываю свое)
+  name: goalkeeper-kuber   
   namespace: default
 spec:
   schedule: "* 10 * * *"
