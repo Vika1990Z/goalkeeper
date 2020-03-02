@@ -19,3 +19,4 @@ jobs:
         docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
         docker build . --no-cache -f Dockerfile -t ${DOCKER_URL}
         docker push ${DOCKER_URL}
+#fjbnsfjbn
