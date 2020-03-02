@@ -1,17 +1,17 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: goalkeeper-kuber
+  name: goalkeeper-kuber   (придумываю свое)
   namespace: default
 spec:
-  schedule: "55 * * * *"
+  schedule: "* 10 * * *"
   jobTemplate:
     spec:
       template:
         spec:
           containers:
           - name: golakeeper-app
-            image: vika1990z/goalkeeper_app:1.0.4
+            image: vika1990z/goalkeeper_app:1.0.6
             env:
               - name: OS_OPENSTACK_REGION_NAME
                 valueFrom:
@@ -63,4 +63,4 @@ spec:
                   secretKeyRef:
                     name: mysecrets
                     key: OS_MAIL_PASSWORD  
-          restartPolicy: OnFailure    
+          restartPolicy: OnFailure  
