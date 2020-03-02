@@ -19,4 +19,34 @@ jobs:
         docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
         docker build . --no-cache -f Dockerfile -t ${DOCKER_URL}
         docker push ${DOCKER_URL}
-#fjbnsfjbn
+
+#deploy to Kubernetes       
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v1
+    - name: Set context
+      uses: azure/k8s-set-context@v1
+      with:
+        method: kubeconfig
+        kubeconfig: ${{ secrets.KUBE_CONFIG }}
+      id: setcontext
+    - name: Set imagePullSecret
+      uses: azure/k8s-create-secret@v1
+      with:
+        namespace: 'default'
+        container-registry-url: ${{ secrets.REGISTRY_URL }}
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: 'docker-registry-secret'
+      id: create-secret      
+    - name: Deploy
+      run: |
+        SHA=${GITHUB_SHA:0:7}
+        APP=${GITHUB_REPOSITORY#*/}
+        DOCKER_URL=${{ secrets.REGISTRY_URL }}/${{ secrets.REGISTRY_REPO }}/${APP}/${APP}:${SHA}
+        sed -i "s,IMG,${DOCKER_URL},g" cronjob-goalkeeper.yaml
+        kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "docker-registry-secret"}]}'
+        kubectl apply -f cronjob-goalkeeper.yaml

@@ -11,7 +11,7 @@ spec:
         spec:
           containers:
           - name: golakeeper-app
-            image: vika1990z/goalkeeper_app:1.0.6
+            image: IMG
             env:
               - name: OS_OPENSTACK_REGION_NAME
                 valueFrom:
