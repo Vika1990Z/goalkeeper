@@ -16,9 +16,7 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
-print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts!\n') 
-
-
+environment = os.environ['ENV'] 
 
 openstack_region_name=os.environ['OS_OPENSTACK_REGION_NAME']
 openstack_auth_url=os.environ['OS_OPENSTACK_URL']
@@ -31,7 +29,20 @@ fleio_auth_url = os.environ['OS_FLEIO_URL']
 mail_from_adr=os.environ['OS_MAIL_FROM_ADR']
 mail_password=os.environ['OS_MAIL_PASSWORD']
 
-own_adress = 'v.zubyenko@gmail.com'
+telegram_token=os.environ['OS_TELEGRAM_TOKEN']
+
+my_chat_id=os.environ['OS_TELEGRAM_MY_CHAT_ID'] 
+own_adress=os.environ['OWN_MAIL_ADDR']
+
+
+print ()
+print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts!\n') 
+print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Target environment is {environment}\n')
+
+TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts! Target environment is {environment}'
+requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
+      dict(chat_id=my_chat_id, text=TELEGRAM_MESSAGE))
+
 
 # logging function:
 def logInsert(logStr):                                                                               
@@ -52,10 +63,10 @@ def ip_range():
         ip.append(ip_y)
     ip_str = ' '.join(ip)
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: All IP_addresses is assembled and represented in a variable "ips"')
-    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: ips = 188.40.161.1 - 188.40.161.127; 46.4.240.33 - 46.4.240.63')
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of target ips is 188.40.161.1 - 188.40.161.127; 46.4.240.33 - 46.4.240.63')
     return (ip_str)
 
-ips = ip_range()
+
 
 conn = connection.Connection(
     region_name=openstack_region_name,
@@ -74,6 +85,8 @@ servers = conn.list_servers(detailed=False, all_projects=True, bare=False, filte
 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List_of_servers was found with openstackSDK') 
 floatingIPs = conn.list_floating_ips(filters=None)
 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List_of_floating_IPs was found with openstackSDK\n')
+
+ips = ip_range()
 
 
 def find_projectID_Openstack(ip):
@@ -195,8 +208,9 @@ def sendmail_report(to_adr, code):
 # The main function of nmap scanning of selected hosts on selected ports, which scans and uses all of the above functions for sending a scan report.
 def scanning():
     danger_ports = '53,123,9200,389,5353,11211,6379,27017,1434,111,161,9306,9312,1900,10001,23,137,135,138,139,445,3306,5432,9042,9160,7000,7001,7199,8888,61620,61621'
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of dangerous ports: {danger_ports}\n')
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start scanning according to the list of dangerous ports')
-    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of dangerous ports: {danger_ports}')
+
     nm = nmap.PortScanner()
     nm_scan_json = nm.scan(hosts=ips, arguments=f'-sS -sU -p {danger_ports}')
     nm_scan_str = json.dumps(nm_scan_json, indent=4)
@@ -211,29 +225,44 @@ def scanning():
                 if nm[host][proto][port]['state'] == 'open':
                     output_port = f"port : {port}  state : {nm[host][proto][port]['state']}  Protocol : {proto}"
                     open_ports.append(output_port)
-                    open_ports_str = ';\n               '.join(open_ports)
+                    open_ports_str = ';\n                     '.join(open_ports)
         if open_ports != []:
-            output = f"\n               {output_host}\n               {open_ports_str}"
+            output = f"\n                     {output_host}\n                     {open_ports_str}"
             print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: The host {host} has the following open dangerous ports: {output}')
-        
+
 
             projectID_Openstack = find_projectID_Openstack(host)
             found_email = find_email_fleio(projectID_Openstack)
 
-            to_adr = found_email
-            code = output
+            all_found_inf_string = f'The host {host} has the following open dangerous ports: {output}\nProject_ID in Openstack: {projectID_Openstack}\nFound email_adr is {found_email}' 
+            
+            TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: {all_found_inf_string}'
+            requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
+              dict(chat_id=my_chat_id, text=TELEGRAM_MESSAGE))
 
-            if to_adr == False or to_adr == 'NOT_FOUND':
-                own_adress = 'v.zubyenko@gmail.com'
-                sendmail_report(own_adress, code)
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As EMAIL_ADDR was NOT_FOUND a report was sent to OWN_adress')
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {own_adress}\n')
-            else:
+            if environment == 'DEV':
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is DEV, all reports will be sent to our own adresses')
+                to_adr = own_adress
+                code = f'{all_found_inf_string}'
                 sendmail_report(to_adr, code)
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report was sent to owner of this host {host} on email {to_adr}')
                 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
+
+            if environment == 'PROD':
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is PROD, all reports will be sent to owner of this host')
+                to_adr = found_email
+                code = output
+
+                if to_adr == False or to_adr == 'NOT_FOUND':
+                    sendmail_report(own_adress, code)
+                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As EMAIL_ADDR was NOT_FOUND a report was sent to OWN_adress')
+                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {own_adress}\n')
+                else:
+                    sendmail_report(to_adr, code)
+                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report was sent to owner of this host {host} on email {to_adr}')
+                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
 
         else:
             print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: The host {host} has NO OPEN dangerous ports.\n')
+
 
 scanning()    

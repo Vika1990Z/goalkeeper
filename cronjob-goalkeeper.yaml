@@ -4,7 +4,7 @@ metadata:
   name: goalkeeper-kuber   
   namespace: default
 spec:
-  schedule: "00 10 * * *"
+  schedule: "05 13 * * *"
   jobTemplate:
     spec:
       template:
@@ -13,6 +13,15 @@ spec:
           - name: golakeeper-app
             image: IMG
             env:
+              - name: ENV
+                value: 'PROD'
+
+              - name: OWN_MAIL_ADDR
+                value: 'v.zubyenko@gmail.com'
+                  
+              - name: OS_TELEGRAM_MY_CHAT_ID
+                value: '388958210'
+
               - name: OS_OPENSTACK_REGION_NAME
                 valueFrom:
                   secretKeyRef:
@@ -63,4 +72,12 @@ spec:
                   secretKeyRef:
                     name: mysecrets
                     key: OS_MAIL_PASSWORD  
+              - name: OS_TELEGRAM_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: mysecrets
+                    key: OS_TELEGRAM_TOKEN  
+                                       
+
+
           restartPolicy: OnFailure  
