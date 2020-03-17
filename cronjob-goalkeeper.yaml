@@ -4,7 +4,7 @@ metadata:
   name: goalkeeper-kuber   
   namespace: default
 spec:
-  schedule: "00 10 * * *"
+  schedule: "20 15 * * *"
   jobTemplate:
     spec:
       template:
