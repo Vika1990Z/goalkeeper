@@ -36,7 +36,7 @@ jobs:
     - name: Set imagePullSecret
       uses: azure/k8s-create-secret@v1
       with:
-        namespace: 'default'
+        namespace: 'goalkeeper-prod'
         container-registry-url: ${{ secrets.REGISTRY_URL }}
         container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
         container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
