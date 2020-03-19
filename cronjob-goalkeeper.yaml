@@ -1,10 +1,12 @@
+
+
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: goalkeeper-kuber   
-  namespace: default
+  namespace: goalkeeper-prod
 spec:
-  schedule: "20 15 * * *"
+  schedule: "50 16 * * *"
   jobTemplate:
     spec:
       template:
@@ -14,7 +16,7 @@ spec:
             image: IMG
             env:
               - name: ENV
-                value: 'PROD'
+                value: 'DEV'
 
               - name: OWN_MAIL_ADDR
                 value: 'v.zubyenko@gmail.com'

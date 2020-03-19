@@ -37,9 +37,9 @@ own_adress=os.environ['OWN_MAIL_ADDR']
 
 print ()
 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts!\n') 
-print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Target environment is {environment}\n')
+print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Target environment is {environment} in {fleio_auth_url}\n')
 
-TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts! Target environment is {environment}'
+TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Hello Today! The GOALKEEPER starts! Target environment is {environment} in {fleio_auth_url}'
 requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
       dict(chat_id=my_chat_id, text=TELEGRAM_MESSAGE))
 
@@ -55,15 +55,21 @@ def logInsert(logStr):
 # function collecting all our IP addresses into one array:
 def ip_range():
     ip = []
-    for i in range(1, 128):
-        ip_i = str(f"188.40.161.{i}")
+    for i in range(1, 255):
+        ip_i = str(f"185.91.80.{i}")
         ip.append(ip_i)
-    for y in range(33, 64):    
-        ip_y = str(f"46.4.240.{y}")
+    for y in range(1, 255):    
+        ip_y = str(f"185.91.81.{y}")
         ip.append(ip_y)
+    for x in range(1, 255):    
+        ip_x = str(f"185.91.82.{x}")
+        ip.append(ip_x) 
+    for n in range(1, 255):    
+        ip_n = str(f"185.91.83.{n}")
+        ip.append(ip_n)               
     ip_str = ' '.join(ip)
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: All IP_addresses is assembled and represented in a variable "ips"')
-    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of target ips is 188.40.161.1 - 188.40.161.127; 46.4.240.33 - 46.4.240.63')
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of target ips is from Range: 185.91.80.1 – 185.91.83.254')
     return (ip_str)
 
 
@@ -80,11 +86,23 @@ conn = connection.Connection(
         project_id=openstack_project_id)
     )
 
-print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Succesfully connect with openstackSDK')  
+  
 servers = conn.list_servers(detailed=False, all_projects=True, bare=False, filters=None)
+print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Succesfully connect with openstackSDK')
 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List_of_servers was found with openstackSDK') 
-floatingIPs = conn.list_floating_ips(filters=None)
-print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List_of_floating_IPs was found with openstackSDK\n')
+
+myToken = fleio_token
+myUrl = str(f"{fleio_auth_url}/openstack/floatingips?page_size=10000")
+head = {'Authorization': 'token {}'.format(myToken)}
+response = requests.get(myUrl, headers=head)
+response_status = response.status_code
+if response_status == 200:
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Succesfully connect with Fleio API')
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List_of_floating_IPs was found with Fleio API\n')
+else:
+    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Page not found - problem with Authorization in Fleio')
+
+
 
 ips = ip_range()
 
@@ -95,30 +113,44 @@ def find_projectID_Openstack(ip):
     servers_str = json.dumps(servers, indent=2)
     servers_json = json.loads(servers_str)
     output_byIP_json = [x for x in servers_json if x['public_v4'] == ip]
-    if output_byIP_json == []:
-        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: IP: {ip} was NOT_FOUND in list_of_servers in Openstack')
-        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Looking for IP: {ip} in list_of_floating_IPs in Openstack')        
-        floatingIPs_str = json.dumps(floatingIPs, indent=2)
-        floatingIPs_json = json.loads(floatingIPs_str)
-        output_byfloatingIPs_json = [x for x in floatingIPs_json if x['floating_ip_address'] == ip]
-        if output_byfloatingIPs_json == []:
-            projectID_Openstack = "NOT_FOUND"
-            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: IP: {ip} was NOT_FOUND in list_of_floating_IPs ')
-            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')
-        else:
-            projectID_Openstack = output_byfloatingIPs_json[0]['project_id']
-            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project details in Openstack for IP: {ip} was FOUND among floatingIPs')
-            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')            
-    else:
+    if output_byIP_json != []:
         projectID_Openstack = output_byIP_json[0]['project_id']
         print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project details in Openstack for IP: {ip} was FOUND among servers') 
         print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')     
-    return projectID_Openstack
+        return projectID_Openstack
+    else:  
+        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: IP: {ip} was NOT_FOUND in list_of_servers in Openstack')
+        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Looking for IP: {ip} in list_of_floating_IPs in Fleio')        
+        floatingIPs_json = json.loads(response.text)
+        floatingIPs_str = json.dumps(floatingIPs_json, indent=2) 
+        floatingIPs_json_objects = floatingIPs_json['objects'] 
+        for objects in floatingIPs_json_objects:
+            if objects["floating_ip_address"] == ip:
+                projectID_Openstack = objects ["project"]
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project details in Fleio for IP: {ip} was FOUND among floatingIPs')
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')
+                return projectID_Openstack           
+            else:
+                projectID_Openstack = "NOT_FOUND"
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: IP: {ip} was NOT_FOUND in list_of_floating_IPs ')
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')
+                return projectID_Openstack
 
+def find_projectNAME_Openstack(projectID_Openstack):
+    if projectID_Openstack == "NOT_FOUND":
+        projectNAME_Openstack = 'NOT_FOUND'
+        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME in Openstack: {projectNAME_Openstack}\n')
+        return projectNAME_Openstack
+    else:
+        project = conn.get_project(projectID_Openstack, filters=None, domain_id=None)
+        project_str = json.dumps(project, indent=2)
+        project_json = json.loads(project_str)
+        projectNAME_Openstack = project_json['name']
+        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME in Openstack: {projectNAME_Openstack}\n')
+        return projectNAME_Openstack        
 
 def find_email_fleio(projectID_Openstack):
     
-
     if projectID_Openstack == "NOT_FOUND":
         projectNAME_Openstack = 'NOT_FOUND'
         found_email = "NOT_FOUND"
@@ -129,7 +161,7 @@ def find_email_fleio(projectID_Openstack):
         project_str = json.dumps(project, indent=2)
         project_json = json.loads(project_str)
         projectNAME_Openstack = project_json['name']
-        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME was FOUND in Openstack')
+        print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME for project_ID:{projectID_Openstack}  was FOUND in Openstack')
         print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME in Openstack: {projectNAME_Openstack}')
         projectNAME_Openstack_formatted = projectNAME_Openstack.split(' - ')
         if len(projectNAME_Openstack_formatted) < 2:
@@ -177,19 +209,21 @@ def sendmail_report(to_adr, code):
     
     html = """\
     <html>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
       <head></head>
       <body>
-        <p>Dear User,</p>
+        <p><b>Dear User,<b></p>
         <p>We have received a security alert from our security guide.</p>
-        <br>{code}<br>
+        <p><p>
+        <p>{code}<p>
         <p>Please investigate and solve the reported issue.</p>
         <p>It is not required that you reply to either us.</p>
         <p>If the issue has been fixed successfully, you should not receive any further notifications.</p>
         <p>In case of further questions, please contact support@ventus.ag.</p>
         <p>Additional information can be found at the link below.</p>
         <a href="https://ventuscloud.eu/docs/tutorials/Security_Guide">Security_Guide</a>
-        <p>Kind regards,</p>
-        <p>Your Ventus Cloud Team</p>
+        <p><b>Kind regards,<b></p>
+        <p><b>Your Ventus Cloud Team<b></p>
       </body>
     </html>
     """.format(code=code)
@@ -208,6 +242,7 @@ def sendmail_report(to_adr, code):
 # The main function of nmap scanning of selected hosts on selected ports, which scans and uses all of the above functions for sending a scan report.
 def scanning():
     danger_ports = '53,123,9200,389,5353,11211,6379,27017,1434,111,161,9306,9312,1900,10001,23,137,135,138,139,445,3306,5432,9042,9160,7000,7001,7199,8888,61620,61621'
+    #danger_ports = '6379,53,22'
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of dangerous ports: {danger_ports}\n')
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start scanning according to the list of dangerous ports')
 
@@ -216,53 +251,95 @@ def scanning():
     nm_scan_str = json.dumps(nm_scan_json, indent=4)
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Scanning is COMLETED, all information is collected in a variable "nm_scan_str"')
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Analaze which IPaddress has open dangerous ports\n')
+    
+    host_open_ports_dict = {}
+    host_projects_dict = {}
+
+    host_open_ports_dict_console = {}
+    host_projects_dict_console = {}
+
     for host in nm.all_hosts():
-        output_host = f"{host} - State : {nm[host].state()}:"
-        open_ports = []
+        output_host = f"<p style='color:#ff0000'>{host} - State : {nm[host].state()}:</p>"
+        output_host_console = f"{host} - State : {nm[host].state()}:"
+        
+        open_ports_list = []
+        open_ports_list_console = []
         for proto in nm[host].all_protocols():
             lport = nm[host][proto].keys()
             for port in lport:
                 if nm[host][proto][port]['state'] == 'open':
-                    output_port = f"port : {port}  state : {nm[host][proto][port]['state']}  Protocol : {proto}"
-                    open_ports.append(output_port)
-                    open_ports_str = ';\n                     '.join(open_ports)
-        if open_ports != []:
-            output = f"\n                     {output_host}\n                     {open_ports_str}"
-            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: The host {host} has the following open dangerous ports: {output}')
+                    output_port = f"<p>Port : {port}  State : {nm[host][proto][port]['state']}  Protocol : {proto};<p>"
+                    open_ports_list.append(output_port)
+                    open_ports_str = ' '.join(open_ports_list)
 
+                    output_port_console = f"Port : {port}  State : {nm[host][proto][port]['state']}  Protocol : {proto};"
+                    open_ports_list_console.append(output_port_console)
+                    open_ports_str_console = '\n                     '.join(open_ports_list_console)
+                  
+        if open_ports_list != []:
+            output = f"{output_host}\n{open_ports_str}"
+            host_open_ports_dict[host]=output
+            host_open_ports_dict.update({host : output}) 
+
+            output_console = f"\n                     {output_host_console}\n                     {open_ports_str_console}"
+            host_open_ports_dict_console[host]=output_console
+            host_open_ports_dict_console.update({host : output_console}) 
+            print(f'\n{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: The host {host} has the following open dangerous ports: {host_open_ports_dict_console[host]}')
 
             projectID_Openstack = find_projectID_Openstack(host)
-            found_email = find_email_fleio(projectID_Openstack)
-
-            all_found_inf_string = f'The host {host} has the following open dangerous ports: {output}\nProject_ID in Openstack: {projectID_Openstack}\nFound email_adr is {found_email}' 
-            
-            TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: {all_found_inf_string}'
-            requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
-              dict(chat_id=my_chat_id, text=TELEGRAM_MESSAGE))
-
-            if environment == 'DEV':
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is DEV, all reports will be sent to our own adresses')
-                to_adr = own_adress
-                code = f'{all_found_inf_string}'
-                sendmail_report(to_adr, code)
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
-
-            if environment == 'PROD':
-                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is PROD, all reports will be sent to owner of this host')
-                to_adr = found_email
-                code = output
-
-                if to_adr == False or to_adr == 'NOT_FOUND':
-                    sendmail_report(own_adress, code)
-                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As EMAIL_ADDR was NOT_FOUND a report was sent to OWN_adress')
-                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {own_adress}\n')
-                else:
-                    sendmail_report(to_adr, code)
-                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report was sent to owner of this host {host} on email {to_adr}')
-                    print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
-
+            projectNAME_Openstack = find_projectNAME_Openstack(projectID_Openstack)
+            host_projects_dict[host]=projectID_Openstack
+            host_projects_dict.update({host : projectID_Openstack})
         else:
             print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: The host {host} has NO OPEN dangerous ports.\n')
+    
+    print ('_____________________________________________________________________________________________________ ')
+    print(f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start agrigating information conected with the same project')
+    formatted_host_projects_dict = {}
+    for pair in host_projects_dict.items():
+        if pair[1] not in formatted_host_projects_dict.keys():
+            formatted_host_projects_dict[pair[1]] = []
+        formatted_host_projects_dict[pair[1]].append(pair[0])
 
+    for pr in formatted_host_projects_dict.keys():
+        full_inf_str = ''
+        full_inf_str_console = ''
+        for hs in formatted_host_projects_dict[pr]:
+            inf_str = f'\n<br><b>{host_open_ports_dict[hs]}<b><br>'
+            full_inf_str +=  inf_str
+            
+            inf_str_console = f'\n{host_open_ports_dict_console[hs]}'
+            full_inf_str_console +=  inf_str_console
+        print(f'\n{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start looking for other project details for project: {pr}')
+        found_email = find_email_fleio(pr)
+        projectNAME_Openstack = find_projectNAME_Openstack(pr)
+        all_found_inf_string = f'The project which has next details:\n\nID in OPENSTACK is: {pr} \nNAME in OPENSTACK is: {projectNAME_Openstack}\nEMAIL_ADDR: {found_email} \n\nhas the next problem on the folowing servers: {full_inf_str_console}'
+        
+        TELEGRAM_MESSAGE = f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: {all_found_inf_string}'
+        requests.post(f'https://api.telegram.org/bot{telegram_token}/sendMessage',
+          dict(chat_id=my_chat_id, text=TELEGRAM_MESSAGE))
 
-scanning()    
+        if environment == 'DEV':
+            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is DEV, all reports will be sent to our own adresses')
+            to_adr = own_adress
+            code = f'{full_inf_str}'
+            sendmail_report(to_adr, code)
+            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
+
+        if environment == 'PROD':
+            print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is PROD, all reports will be sent to owner of this host')
+            to_adr = found_email
+            code = full_inf_str
+
+            if to_adr == False or to_adr == 'NOT_FOUND':
+                sendmail_report(own_adress, code)
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As EMAIL_ADDR was NOT_FOUND a report was sent to OWN_adress')
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {own_adress}\n')
+            else:
+                sendmail_report(to_adr, code)
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report was sent to owner of this host {host} on email {to_adr}')
+                print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Report sent successfully to {to_adr}\n')
+
+scanning()            
+        
+
