@@ -329,7 +329,7 @@ def scanning():
         if environment == 'PROD':
             print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: As target environment is PROD, all reports will be sent to owner of this host')
             to_adr = found_email
-            code = full_inf_str
+            code = f'{full_inf_str}'
 
             if to_adr == False or to_adr == 'NOT_FOUND':
                 sendmail_report(own_adress, code)

@@ -6,7 +6,7 @@ metadata:
   name: goalkeeper-kuber   
   namespace: default
 spec:
-  schedule: "52 13 * * *"
+  schedule: "10 14 * * *"
   jobTemplate:
     spec:
       template:
@@ -16,7 +16,7 @@ spec:
             image: IMG
             env:
               - name: ENV
-                value: 'DEV'
+                value: 'PROD'
 
               - name: OWN_MAIL_ADDR
                 value: 'v.zubyenko@gmail.com'
