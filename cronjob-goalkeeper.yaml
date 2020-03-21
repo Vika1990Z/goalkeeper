@@ -4,9 +4,9 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: goalkeeper-kuber   
-  namespace: goalkeeper-prod
+  namespace: default
 spec:
-  schedule: "15 17 * * *"
+  schedule: "15 11 * * *"
   jobTemplate:
     spec:
       template:
