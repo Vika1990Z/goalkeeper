@@ -215,7 +215,7 @@ def sendmail_report(to_adr, code):
         <p><b>Dear User,<b></p>
         <p>We have received a security alert from our security guide.</p>
         <p><p>
-        <p>{code}<p>
+        <p>{code}</p>
         <p>Please investigate and solve the reported issue.</p>
         <p>It is not required that you reply to either us.</p>
         <p>If the issue has been fixed successfully, you should not receive any further notifications.</p>
