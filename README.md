@@ -1,7 +1,7 @@
 
 # Goalkeeper
 
-**Goalkeeper** - a service that helps you to correctly and safely store data on ventus cloud resources. 
+**Goalkeeper** - a service that helps you to correctly and safely store data on Ventus cloud resources. 
 
 ## What is the Goalkeeper and what is it for
 
@@ -156,5 +156,7 @@ After these steps, we run function `ips`, which collects our servers into a one 
     kubectl delete -f cronjob_goalkeeper.yaml
     ```
 
-    
+**Congratulations! Now you know how to set and use Goalkeeper application.**
+
+
 
