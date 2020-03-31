@@ -73,7 +73,7 @@ def ip_range():
     return (ip_str)
 
 
-
+# configure Connection to OpenStack
 conn = connection.Connection(
     region_name=openstack_region_name,
     identity_api_version=3,
@@ -107,6 +107,8 @@ else:
 ips = ip_range()
 
 
+
+# function for finding project ID in Openstack by ip
 def find_projectID_Openstack(ip):
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start finding Project details in Openstack for IP: {ip}')
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Looking for IP: {ip} in list_of_servers in Openstack')  
@@ -136,6 +138,9 @@ def find_projectID_Openstack(ip):
                 print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_ID in Openstack: {projectID_Openstack}')
                 return projectID_Openstack
 
+
+
+# function of finding Project Name in Openstack by it ID
 def find_projectNAME_Openstack(projectID_Openstack):
     if projectID_Openstack == "NOT_FOUND":
         projectNAME_Openstack = 'NOT_FOUND'
@@ -149,6 +154,9 @@ def find_projectNAME_Openstack(projectID_Openstack):
         print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Project_NAME in Openstack: {projectNAME_Openstack}\n')
         return projectNAME_Openstack        
 
+
+
+# function of finding email address of the project owner in Fleio by its Project ID:
 def find_email_fleio(projectID_Openstack):
     
     if projectID_Openstack == "NOT_FOUND":
@@ -195,6 +203,8 @@ def find_email_fleio(projectID_Openstack):
             print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: EMAIL_ADDR: {found_email}') 
             return found_email     
 
+
+
 # function of sending a scan report to the found email address of the project owner in Fleio:
 def sendmail_report(to_adr, code):
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start formulating a report')
@@ -233,7 +243,7 @@ def sendmail_report(to_adr, code):
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Login in to the mail from which reports will be sent is succesfull')
     server = smtplib.SMTP("smtp.office365.com:587")
     server.starttls()
-    #server.set_debuglevel(True)                            # Включаем режим отладки, если не нужен - можно закомментировать
+    #server.set_debuglevel(True)                            
     server.login(from_adr, password)
     server.sendmail(from_adr, to_adr, msg.as_string())
     server.quit()
@@ -242,7 +252,7 @@ def sendmail_report(to_adr, code):
 # The main function of nmap scanning of selected hosts on selected ports, which scans and uses all of the above functions for sending a scan report.
 def scanning():
     danger_ports = '53,123,9200,389,5353,11211,6379,27017,1434,111,161,9306,9312,1900,10001,23,137,135,138,139,445,3306,5432,9042,9160,7000,7001,7199,8888,61620,61621'
-    #danger_ports = '6379,53,22'
+    
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: List of dangerous ports: {danger_ports}\n')
     print (f'{strftime("%Y-%m-%d %H:%M:%S", gmtime())}: Start scanning according to the list of dangerous ports')
 
