@@ -282,7 +282,7 @@ def scanning():
             lport = nm[host][proto].keys()
             for port in lport:
                 if nm[host][proto][port]['state'] == 'open':
-                    output_port = f"<p>Port : {port}  State : {nm[host][proto][port]['state']}  Protocol : {proto};<p>"
+                    output_port = f"<p>Port : {port}  State : {nm[host][proto][port]['state']}  Protocol : {proto};</p>"
                     open_ports_list.append(output_port)
                     open_ports_str = ' '.join(open_ports_list)
 
@@ -319,7 +319,7 @@ def scanning():
         full_inf_str = ''
         full_inf_str_console = ''
         for hs in formatted_host_projects_dict[pr]:
-            inf_str = f'\n<br><b>{host_open_ports_dict[hs]}<b><br>'
+            inf_str = f'\n<br><b>{host_open_ports_dict[hs]}</b></br>'
             full_inf_str +=  inf_str
             
             inf_str_console = f'\n{host_open_ports_dict_console[hs]}'
