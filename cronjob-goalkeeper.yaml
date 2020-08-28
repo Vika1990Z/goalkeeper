@@ -1,85 +1,81 @@
-
-
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: goalkeeper-kuber   
+  name: goalkeeper-kuber
   namespace: default
 spec:
-  schedule: "00 09 * * *"
+  schedule: "30 10 * * *"
   jobTemplate:
     spec:
       template:
         spec:
           containers:
-          - name: golakeeper-app
-            image: IMG
-            env:
-              - name: ENV
-                value: 'PROD'
+            - name: golakeeper-app
+              image: IMG
+              env:
+                - name: ENV
+                  value: "PROD"
 
-              - name: OWN_MAIL_ADDR
-                value: 'v.zubyenko@gmail.com'
-                  
-              - name: OS_TELEGRAM_MY_CHAT_ID
-                value: '388958210'
+                - name: OWN_MAIL_ADDR
+                  value: "v.zubyenko@gmail.com"
 
-              - name: OS_OPENSTACK_REGION_NAME
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_REGION_NAME
-              - name: OS_OPENSTACK_URL
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_URL
-              - name: OS_OPENSTACK_USERNAME
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_USERNAME   
-              - name: OS_OPENSTACK_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_PASSWORD
-              - name: OS_OPENSTACK_USER_DOMAIN_ID
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_USER_DOMAIN_ID                                           
-              - name: OS_OPENSTACK_PROJECT_ID
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_OPENSTACK_PROJECT_ID
-              - name: OS_FLEIO_TOKEN
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_FLEIO_TOKEN                                         
-              - name: OS_FLEIO_URL
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_FLEIO_URL
-              - name: OS_MAIL_FROM_ADR
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_MAIL_FROM_ADR     
-              - name: OS_MAIL_PASSWORD
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_MAIL_PASSWORD  
-              - name: OS_TELEGRAM_TOKEN
-                valueFrom:
-                  secretKeyRef:
-                    name: mysecrets
-                    key: OS_TELEGRAM_TOKEN  
-                                       
+                - name: OS_TELEGRAM_MY_CHAT_ID
+                  value: "388958210"
 
+                - name: OS_OPENSTACK_REGION_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_REGION_NAME
+                - name: OS_OPENSTACK_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_URL
+                - name: OS_OPENSTACK_USERNAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_USERNAME
+                - name: OS_OPENSTACK_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_PASSWORD
+                - name: OS_OPENSTACK_USER_DOMAIN_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_USER_DOMAIN_ID
+                - name: OS_OPENSTACK_PROJECT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_OPENSTACK_PROJECT_ID
+                - name: OS_FLEIO_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_FLEIO_TOKEN
+                - name: OS_FLEIO_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_FLEIO_URL
+                - name: OS_MAIL_FROM_ADR
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_MAIL_FROM_ADR
+                - name: OS_MAIL_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_MAIL_PASSWORD
+                - name: OS_TELEGRAM_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: mysecrets
+                      key: OS_TELEGRAM_TOKEN
 
-          restartPolicy: OnFailure  
+          restartPolicy: OnFailure
