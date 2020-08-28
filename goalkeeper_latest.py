@@ -222,18 +222,21 @@ def sendmail_report(to_adr, code):
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
       <head></head>
       <body>
-        <p><b>Dear User,<b></p>
-        <p>We have received a security alert from our security guide.</p>
-        <p><p>
+        <p><b>Dear User,</b></p>
+        <p><b>I'm your personal Ventus Cloud Security Advisor.</b></p>
+        <p>While you're working in Ventus Cloud Portal, I monitor the security of your environment and inform you, if I found any security breaches.</p>
+        <p></p>
+        <p><u>Recently I've received a security alert about the next incident on your servers:</u></p>
         <p>{code}</p>
-        <p>Please investigate and solve the reported issue.</p>
-        <p>It is not required that you reply to either us.</p>
-        <p>If the issue has been fixed successfully, you should not receive any further notifications.</p>
-        <p>In case of further questions, please contact support@ventus.ag.</p>
-        <p>Additional information can be found at the link below.</p>
-        <a href="https://ventuscloud.eu/docs/tutorials/Security_Guide">Security_Guide</a>
-        <p><b>Kind regards,<b></p>
-        <p><b>Your Ventus Cloud Team<b></p>
+        <p><i>These internet faced ports are well known and can be abused by DDoS, brute-force, exploits and other types of vulnerabilities. Furthermore, they allow potential attackers to gather information on the server or network for preparation of further attacks.</i></p>
+        <p>We kindly ask you to take steps to mitigate potential risks and protect your deployments.</p>
+        <p>We prepared <a href="https://ventuscloud.eu/docs/tutorials/Security_Guide">Security Guide</a> for you which describes how-to solve common issues.</p>
+        <p>Also, we highly recommend you to configure <a href="https://ventuscloud.eu/docs/coretasks/security-groups">Security Groups</a>, this is our cloud-native firewall which is simple to use but very powerful.</p>
+        <p>Until then, I will regularly remind you of this possible threat.</p>
+        <p>And if you want to receive additional information or advice, please write to us <a href = "mailto: support@ventus.ag">support@ventus.ag</a> or create a <b>ticket</b> on our portal.</p>
+        <p></p>
+        <p><b>Kind regards,</b></p>
+        <p><b>Your Ventus Cloud Security Advisor</b></p>
       </body>
     </html>
     """.format(code=code)
