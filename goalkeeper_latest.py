@@ -228,6 +228,7 @@ def sendmail_report(to_adr, code):
         <p></p>
         <p><u>Recently I've received a security alert about the next incident on your servers:</u></p>
         <p>{code}</p>
+        <p></p>
         <p><i>These internet faced ports are well known and can be abused by DDoS, brute-force, exploits and other types of vulnerabilities. Furthermore, they allow potential attackers to gather information on the server or network for preparation of further attacks.</i></p>
         <p>We kindly ask you to take steps to mitigate potential risks and protect your deployments.</p>
         <p>We prepared <a href="https://ventuscloud.eu/docs/tutorials/Security_Guide">Security Guide</a> for you which describes how-to solve common issues.</p>
