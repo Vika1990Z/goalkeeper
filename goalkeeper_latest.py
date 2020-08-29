@@ -212,7 +212,7 @@ def sendmail_report(to_adr, code):
     password = mail_password
     
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "Abuse Message from Ventus Cloud Security Guide"
+    msg['Subject'] = "Message from Ventus Cloud Security Advisor"
     msg['From'] = from_adr
     msg['To'] = to_adr
 
